@@ -1,0 +1,34 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667EEA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764BA2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="checkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F0F0F0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="1024" height="1024" rx="224" fill="url(#bgGradient)"/>
+
+  <!-- Week dots (7 circles representing days) -->
+  <circle cx="232" cy="340" r="48" fill="white" fill-opacity="0.3"/>
+  <circle cx="364" cy="340" r="48" fill="white" fill-opacity="0.3"/>
+  <circle cx="496" cy="340" r="48" fill="white" fill-opacity="0.9"/>
+  <circle cx="628" cy="340" r="48" fill="white" fill-opacity="0.9"/>
+  <circle cx="760" cy="340" r="48" fill="white" fill-opacity="0.9"/>
+
+  <!-- Small checkmarks in completed dots -->
+  <path d="M466 340 L486 360 L526 320" stroke="#667EEA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M598 340 L618 360 L658 320" stroke="#667EEA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M730 340 L750 360 L790 320" stroke="#667EEA" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Large central checkmark circle -->
+  <circle cx="512" cy="620" r="200" fill="white" fill-opacity="0.95"/>
+
+  <!-- Large checkmark -->
+  <path d="M400 620 L480 700 L640 540" stroke="url(#bgGradient)" stroke-width="56" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

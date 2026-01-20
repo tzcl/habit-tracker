@@ -23,7 +23,13 @@ struct HabitListView: View {
                 }
             }
             .navigationTitle("Habits")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if let viewModel, !viewModel.habits.isEmpty {
+                        EditButton()
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         viewModel?.showingAddHabit = true
@@ -91,25 +97,29 @@ struct HabitListView: View {
 
     @ViewBuilder
     private func habitListContent(viewModel: HabitListViewModel) -> some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(viewModel.habits) { habit in
-                    HabitCardView(
-                        habit: habit,
-                        weekDates: viewModel.weekDates(),
-                        onTap: {
-                            viewModel.toggleCompletion(for: habit)
-                        },
-                        onLongPress: {
-                            navigationPath.append(habit.id)
-                        }
-                    )
-                }
+        List {
+            ForEach(viewModel.habits) { habit in
+                HabitCardView(
+                    habit: habit,
+                    weekDates: viewModel.weekDates(),
+                    onDateTap: { date in
+                        viewModel.toggleCompletion(for: habit, on: date)
+                    },
+                    onTap: {
+                        navigationPath.append(habit.id)
+                    }
+                )
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .onMove { source, destination in
+                viewModel.moveHabit(from: source, to: destination)
+            }
         }
+        .listStyle(.plain)
         .background(Color(.systemGroupedBackground))
+        .scrollContentBackground(.hidden)
         .refreshable {
             viewModel.refreshCurrentDate()
             viewModel.fetchHabits()

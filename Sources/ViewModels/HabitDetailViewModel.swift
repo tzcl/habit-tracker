@@ -8,10 +8,6 @@ final class HabitDetailViewModel {
     private let calendar: Calendar
 
     let habit: Habit
-
-    var editedName: String
-    var editedTargetPerWeek: Int
-    var showingDeleteConfirmation = false
     var errorMessage: String?
 
     private var onDelete: (() -> Void)?
@@ -21,28 +17,35 @@ final class HabitDetailViewModel {
         self.modelContext = modelContext
         self.calendar = calendar
         self.onDelete = onDelete
-
-        self.editedName = habit.name
-        self.editedTargetPerWeek = habit.targetPerWeek
     }
 
-    // MARK: - Computed Properties
+    // MARK: - Habit Properties (auto-save on change)
 
-    var hasUnsavedChanges: Bool {
-        editedName != habit.name || editedTargetPerWeek != habit.targetPerWeek
+    var name: String {
+        get { habit.name }
+        set {
+            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty && trimmed.count <= 50 else { return }
+            habit.name = trimmed
+            saveContext()
+        }
     }
 
-    var isNameValid: Bool {
-        let trimmed = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return !trimmed.isEmpty && trimmed.count <= 50
+    var targetPerWeek: Int {
+        get { habit.targetPerWeek }
+        set {
+            guard newValue >= 1 && newValue <= 7 else { return }
+            habit.targetPerWeek = newValue
+            saveContext()
+        }
     }
 
-    var isTargetValid: Bool {
-        editedTargetPerWeek >= 1 && editedTargetPerWeek <= 7
-    }
-
-    var canSave: Bool {
-        hasUnsavedChanges && isNameValid && isTargetValid
+    var color: HabitColor {
+        get { habit.color }
+        set {
+            habit.colorIndex = newValue.rawValue
+            saveContext()
+        }
     }
 
     // MARK: - Week Data
@@ -87,20 +90,6 @@ final class HabitDetailViewModel {
         saveContext()
     }
 
-    func saveChanges() {
-        guard canSave else { return }
-
-        habit.name = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        habit.targetPerWeek = editedTargetPerWeek
-
-        saveContext()
-    }
-
-    func discardChanges() {
-        editedName = habit.name
-        editedTargetPerWeek = habit.targetPerWeek
-    }
-
     func deleteHabit() {
         modelContext.delete(habit)
         saveContext()
@@ -108,6 +97,11 @@ final class HabitDetailViewModel {
     }
 
     // MARK: - Validation
+
+    func isNameValid(_ name: String) -> Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed.count <= 50
+    }
 
     func isNameUnique(_ name: String, allHabits: [Habit]) -> Bool {
         let normalizedName = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()

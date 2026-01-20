@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -21,6 +21,7 @@
 		F2FD55ACA7C103F5E6F70F0C /* Habit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79473A3CBFB9360E4F61C4B8 /* Habit.swift */; };
 		F7652BE4B94E928A9C102A22 /* HabitDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C71907A1ACD0A43CEB15D5 /* HabitDetailViewModel.swift */; };
 		FEC8313A6B701D5027DD0007 /* DateHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B652CB9C38234479E8720E3 /* DateHelpers.swift */; };
+		FEDE4DA1778B1E9D6BEEF82B /* ColorPickerGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9680C03C363DF19EC9937A60 /* ColorPickerGrid.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,9 +36,10 @@
 		620E6EA8EF0078A255AE6B30 /* Completion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Completion.swift; sourceTree = "<group>"; };
 		688233F8244BCFC66102B0DC /* HabitListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitListView.swift; sourceTree = "<group>"; };
 		79473A3CBFB9360E4F61C4B8 /* Habit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Habit.swift; sourceTree = "<group>"; };
+		9680C03C363DF19EC9937A60 /* ColorPickerGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerGrid.swift; sourceTree = "<group>"; };
 		9B652CB9C38234479E8720E3 /* DateHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelpers.swift; sourceTree = "<group>"; };
 		C9BA6D3CF4F053ABEB605FFE /* HabitColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitColor.swift; sourceTree = "<group>"; };
-		CB71FC683723B421A43C92AD /* Habits.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Habits.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB71FC683723B421A43C92AD /* Habits.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Habits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DF59A6558DEAA79B0AA4DBF0 /* HabitCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -64,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				3DADD31AE2667168AD839D80 /* AddHabitSheet.swift */,
+				9680C03C363DF19EC9937A60 /* ColorPickerGrid.swift */,
 				DF59A6558DEAA79B0AA4DBF0 /* HabitCardView.swift */,
 				4260D3D33BD423AD1DA72E85 /* HabitDetailView.swift */,
 				688233F8244BCFC66102B0DC /* HabitListView.swift */,
@@ -154,7 +157,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					4F61129BB39F0B5F97F0BC76 = {
 						DevelopmentTeam = "";
@@ -171,7 +174,6 @@
 			);
 			mainGroup = FB3988B3383050F3DEAF995D;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -187,6 +189,7 @@
 			files = (
 				26EC33BEA9795B99F3B5A34D /* AddHabitSheet.swift in Sources */,
 				A881DC4448998C6847CD1907 /* AnimationConstants.swift in Sources */,
+				FEDE4DA1778B1E9D6BEEF82B /* ColorPickerGrid.swift in Sources */,
 				CF34F10A2A26F538F226C77D /* Completion.swift in Sources */,
 				FEC8313A6B701D5027DD0007 /* DateHelpers.swift in Sources */,
 				F2FD55ACA7C103F5E6F70F0C /* Habit.swift in Sources */,
@@ -290,6 +293,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -313,6 +317,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -358,6 +363,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -374,6 +380,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";

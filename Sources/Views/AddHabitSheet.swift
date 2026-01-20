@@ -7,6 +7,7 @@ struct AddHabitSheet: View {
 
     @State private var habitName = ""
     @State private var targetPerWeek = 3
+    @State private var selectedColor: HabitColor = .coral
     @FocusState private var isNameFieldFocused: Bool
 
     private let maxNameLength = 50
@@ -50,6 +51,12 @@ struct AddHabitSheet: View {
                     Text("Weekly Goal")
                 } footer: {
                     Text("How many times per week do you want to complete this habit?")
+                }
+
+                Section {
+                    ColorPickerGrid(selectedColor: $selectedColor)
+                } header: {
+                    Text("Color")
                 }
             }
             .navigationTitle("New Habit")
@@ -108,7 +115,7 @@ struct AddHabitSheet: View {
 
     private func saveHabit() {
         guard canSave else { return }
-        viewModel.addHabit(name: trimmedName, targetPerWeek: targetPerWeek)
+        viewModel.addHabit(name: trimmedName, targetPerWeek: targetPerWeek, color: selectedColor)
         dismiss()
     }
 }

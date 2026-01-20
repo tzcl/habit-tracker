@@ -35,8 +35,8 @@ final class HabitListViewModel {
 
     // MARK: - Habit Management
 
-    func addHabit(name: String, targetPerWeek: Int) {
-        let colorIndex = habits.count % HabitColor.allCases.count
+    func addHabit(name: String, targetPerWeek: Int, color: HabitColor? = nil) {
+        let colorIndex = color?.rawValue ?? (habits.count % HabitColor.allCases.count)
         let sortOrder = (habits.map(\.sortOrder).max() ?? -1) + 1
 
         let habit = Habit(
@@ -55,6 +55,17 @@ final class HabitListViewModel {
         modelContext.delete(habit)
         saveContext()
         fetchHabits()
+    }
+
+    func moveHabit(from source: IndexSet, to destination: Int) {
+        habits.move(fromOffsets: source, toOffset: destination)
+
+        // Update sort orders
+        for (index, habit) in habits.enumerated() {
+            habit.sortOrder = index
+        }
+
+        saveContext()
     }
 
     // MARK: - Completion Management

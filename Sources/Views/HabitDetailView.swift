@@ -11,6 +11,7 @@ struct HabitDetailView: View {
 
     @State private var viewModel: HabitDetailViewModel?
     @State private var showingDeleteConfirmation = false
+    @State private var nameInput: String = ""
 
     private let calendar = Calendar.current
 
@@ -24,16 +25,6 @@ struct HabitDetailView: View {
         }
         .navigationTitle("Habit Details")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                if let viewModel, viewModel.canSave {
-                    Button("Save") {
-                        viewModel.saveChanges()
-                    }
-                    .fontWeight(.semibold)
-                }
-            }
-        }
         .alert("Delete Habit?", isPresented: $showingDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
@@ -49,6 +40,7 @@ struct HabitDetailView: View {
                     modelContext: modelContext,
                     onDelete: onDelete
                 )
+                nameInput = habit.name
             }
         }
     }
@@ -60,35 +52,52 @@ struct HabitDetailView: View {
         Form {
             // Edit Section
             Section {
-                TextField("Habit name", text: Binding(
-                    get: { viewModel.editedName },
-                    set: { viewModel.editedName = $0 }
-                ))
-                .onChange(of: viewModel.editedName) { _, newValue in
-                    if newValue.count > 50 {
-                        viewModel.editedName = String(newValue.prefix(50))
+                TextField("Habit name", text: $nameInput)
+                    .onChange(of: nameInput) { _, newValue in
+                        // Limit to 50 characters
+                        if newValue.count > 50 {
+                            nameInput = String(newValue.prefix(50))
+                        }
+                        // Save valid names immediately
+                        let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !trimmed.isEmpty && viewModel.isNameUnique(newValue, allHabits: allHabits) {
+                            viewModel.name = newValue
+                        }
                     }
-                }
 
-                if !viewModel.editedName.isEmpty && !viewModel.isNameValid {
-                    Text(nameValidationError(viewModel: viewModel))
+                if !nameInput.isEmpty && !viewModel.isNameValid(nameInput) {
+                    Text("Name cannot be empty")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                } else if !nameInput.isEmpty && !viewModel.isNameUnique(nameInput, allHabits: allHabits) {
+                    Text("A habit with this name already exists")
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
 
                 Stepper(value: Binding(
-                    get: { viewModel.editedTargetPerWeek },
-                    set: { viewModel.editedTargetPerWeek = $0 }
+                    get: { viewModel.targetPerWeek },
+                    set: { viewModel.targetPerWeek = $0 }
                 ), in: 1...7) {
                     HStack {
                         Text("Target")
                         Spacer()
-                        Text("\(viewModel.editedTargetPerWeek)× per week")
+                        Text("\(viewModel.targetPerWeek)× per week")
                             .foregroundStyle(.secondary)
                     }
                 }
             } header: {
                 Text("Details")
+            }
+
+            // Color Section
+            Section {
+                ColorPickerGrid(selectedColor: Binding(
+                    get: { viewModel.color },
+                    set: { viewModel.color = $0 }
+                ))
+            } header: {
+                Text("Color")
             }
 
             // This Week Section
@@ -105,7 +114,7 @@ struct HabitDetailView: View {
                 HStack {
                     Text("Progress")
                     Spacer()
-                    Text("\(viewModel.completionCount()) / \(habit.targetPerWeek)")
+                    Text("\(viewModel.completionCount()) / \(viewModel.targetPerWeek)")
                         .foregroundStyle(.secondary)
                 }
 
@@ -114,9 +123,9 @@ struct HabitDetailView: View {
                     Spacer()
                     if viewModel.isGoalMet() {
                         Label("Goal Met", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(habit.color.color)
+                            .foregroundStyle(viewModel.color.color)
                     } else {
-                        let remaining = habit.targetPerWeek - viewModel.completionCount()
+                        let remaining = viewModel.targetPerWeek - viewModel.completionCount()
                         Text("\(remaining) more to go")
                             .foregroundStyle(.secondary)
                     }
@@ -182,7 +191,7 @@ struct HabitDetailView: View {
 
                 ZStack {
                     Circle()
-                        .fill(isCompleted ? habit.color.color : Color.gray.opacity(0.15))
+                        .fill(isCompleted ? viewModel.color.color : Color.gray.opacity(0.15))
                         .frame(width: 36, height: 36)
 
                     if isCompleted {
@@ -193,7 +202,7 @@ struct HabitDetailView: View {
 
                     if isToday && !isCompleted {
                         Circle()
-                            .strokeBorder(habit.color.color, lineWidth: 2)
+                            .strokeBorder(viewModel.color.color, lineWidth: 2)
                             .frame(width: 36, height: 36)
                     }
                 }
@@ -205,19 +214,6 @@ struct HabitDetailView: View {
         .disabled(isFuture)
         .accessibilityLabel("\(symbol), \(isCompleted ? "completed" : "not completed")\(isToday ? ", today" : "")")
         .accessibilityHint(isFuture ? "Future date" : (isCompleted ? "Double tap to mark incomplete" : "Double tap to mark complete"))
-    }
-
-    // MARK: - Helpers
-
-    private func nameValidationError(viewModel: HabitDetailViewModel) -> String {
-        let trimmed = viewModel.editedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty {
-            return "Name cannot be empty"
-        }
-        if !viewModel.isNameUnique(viewModel.editedName, allHabits: allHabits) {
-            return "A habit with this name already exists"
-        }
-        return ""
     }
 }
 

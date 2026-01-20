@@ -6,129 +6,132 @@ struct WeekIndicatorView: View {
     let completedDates: Set<Date>
     let accentColor: Color
     let calendar: Calendar
+    let onDateTap: ((Date) -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private let segmentSpacing: CGFloat = 2
-    private let cornerRadius: CGFloat = 6
+    private let circleSize: CGFloat = 32
 
     init(
         weekDates: [Date],
         completedDates: Set<Date>,
         accentColor: Color,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        onDateTap: ((Date) -> Void)? = nil
     ) {
         self.weekDates = weekDates
         self.completedDates = completedDates
         self.accentColor = accentColor
         self.calendar = calendar
+        self.onDateTap = onDateTap
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: segmentSpacing) {
-                ForEach(Array(weekDates.enumerated()), id: \.offset) { index, date in
-                    let isCompleted = isDateCompleted(date)
-                    let isToday = calendar.isDateInToday(date)
+        HStack(spacing: 0) {
+            ForEach(Array(weekDates.enumerated()), id: \.offset) { index, date in
+                let isCompleted = isDateCompleted(date)
+                let isToday = calendar.isDateInToday(date)
 
-                    segmentView(
-                        isCompleted: isCompleted,
-                        isToday: isToday,
-                        isFirst: index == 0,
-                        isLast: index == weekDates.count - 1
-                    )
+                dayCircleView(
+                    date: date,
+                    isCompleted: isCompleted,
+                    isToday: isToday
+                )
+
+                if index < weekDates.count - 1 {
+                    Spacer(minLength: 0)
                 }
             }
         }
-        .frame(height: 12)
     }
 
     @ViewBuilder
-    private func segmentView(
+    private func dayCircleView(
+        date: Date,
         isCompleted: Bool,
-        isToday: Bool,
-        isFirst: Bool,
-        isLast: Bool
+        isToday: Bool
     ) -> some View {
-        let corners = segmentCorners(isFirst: isFirst, isLast: isLast)
+        let dayLetter = dayOfWeekLetter(for: date)
 
-        RoundedCornersShape(radius: cornerRadius, corners: corners)
-            .fill(isCompleted ? accentColor : Color.gray.opacity(0.2))
-            .overlay {
-                if isToday && !isCompleted {
-                    RoundedCornersShape(radius: cornerRadius, corners: corners)
-                        .strokeBorder(accentColor.opacity(0.5), lineWidth: 1.5)
-                }
+        Button {
+            onDateTap?(date)
+        } label: {
+            VStack(spacing: 4) {
+                Text(dayLetter)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(isToday ? accentColor : .secondary)
+
+                Circle()
+                    .fill(isCompleted ? accentColor : Color.gray.opacity(0.2))
+                    .frame(width: circleSize, height: circleSize)
+                    .overlay {
+                        if isCompleted {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.white)
+                        } else if isToday {
+                            Circle()
+                                .strokeBorder(accentColor.opacity(0.5), lineWidth: 2)
+                        }
+                    }
             }
-            .animation(
-                reduceMotion ? AnimationConstants.reducedMotion : AnimationConstants.segmentFill,
-                value: isCompleted
-            )
-    }
-
-    private func segmentCorners(isFirst: Bool, isLast: Bool) -> UIRectCorner {
-        var corners: UIRectCorner = []
-        if isFirst {
-            corners.insert(.topLeft)
-            corners.insert(.bottomLeft)
         }
-        if isLast {
-            corners.insert(.topRight)
-            corners.insert(.bottomRight)
-        }
-        return corners
+        .buttonStyle(.plain)
+        .animation(
+            reduceMotion ? AnimationConstants.reducedMotion : AnimationConstants.segmentFill,
+            value: isCompleted
+        )
+        .accessibilityLabel("\(fullDayName(for: date)), \(isCompleted ? "completed" : "not completed")")
+        .accessibilityHint("Tap to toggle completion")
     }
 
     private func isDateCompleted(_ date: Date) -> Bool {
         let startOfDay = calendar.startOfDay(for: date)
         return completedDates.contains { calendar.startOfDay(for: $0) == startOfDay }
     }
-}
 
-// MARK: - Custom Shape for Rounded Corners
-
-struct RoundedCornersShape: Shape {
-    let radius: CGFloat
-    let corners: UIRectCorner
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
+    private func dayOfWeekLetter(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEEE"
+        return formatter.string(from: date)
     }
-}
 
-extension RoundedCornersShape: InsettableShape {
-    func inset(by amount: CGFloat) -> some InsettableShape {
-        RoundedCornersShape(radius: max(0, radius - amount), corners: corners)
+    private func fullDayName(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
     }
 }
 
 #Preview {
-    VStack(spacing: 20) {
+    VStack(spacing: 30) {
         // Empty week
         WeekIndicatorView(
             weekDates: Calendar.current.datesForWeek(containing: Date()),
             completedDates: [],
             accentColor: HabitColor.coral.color
-        )
+        ) { date in
+            print("Tapped: \(date)")
+        }
 
         // Partially complete
         WeekIndicatorView(
             weekDates: Calendar.current.datesForWeek(containing: Date()),
             completedDates: Set([Date(), Calendar.current.date(byAdding: .day, value: -1, to: Date())!]),
             accentColor: HabitColor.teal.color
-        )
+        ) { date in
+            print("Tapped: \(date)")
+        }
 
         // Fully complete
         WeekIndicatorView(
             weekDates: Calendar.current.datesForWeek(containing: Date()),
             completedDates: Set(Calendar.current.datesForWeek(containing: Date())),
             accentColor: HabitColor.indigo.color
-        )
+        ) { date in
+            print("Tapped: \(date)")
+        }
     }
     .padding()
 }

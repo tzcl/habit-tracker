@@ -3,53 +3,65 @@ import SwiftUI
 struct HabitCardView: View {
     let habit: Habit
     let weekDates: [Date]
+    let onDateTap: (Date) -> Void
     let onTap: () -> Void
-    let onLongPress: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isPressed = false
     @State private var showGoalCelebration = false
 
     private let calendar = Calendar.current
 
+    init(
+        habit: Habit,
+        weekDates: [Date],
+        onDateTap: @escaping (Date) -> Void,
+        onTap: @escaping () -> Void
+    ) {
+        self.habit = habit
+        self.weekDates = weekDates
+        self.onDateTap = onDateTap
+        self.onTap = onTap
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Habit name
-            Text(habit.name)
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-
-            // Week indicator
-            WeekIndicatorView(
-                weekDates: weekDates,
-                completedDates: completedDatesSet,
-                accentColor: habit.color.color,
-                calendar: calendar
-            )
-
-            // Progress text
+            // Header with habit name and progress
             HStack {
-                Text(progressText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .contentTransition(.numericText())
+                Text(habit.name)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
 
                 Spacer()
 
                 if isGoalMet {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(habit.color.color)
-                        .imageScale(.small)
+                        .imageScale(.medium)
                         .transition(.scale.combined(with: .opacity))
                 }
             }
+
+            // Week indicator with circles
+            WeekIndicatorView(
+                weekDates: weekDates,
+                completedDates: completedDatesSet,
+                accentColor: habit.color.color,
+                calendar: calendar,
+                onDateTap: handleDateTap
+            )
+
+            // Progress text
+            Text(progressText)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .contentTransition(.numericText())
         }
         .padding(16)
         .background {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.background)
+                .fill(habit.color.backgroundColor)
                 .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
                 .shadow(color: .black.opacity(0.04), radius: 2, x: 0, y: 1)
         }
@@ -58,25 +70,12 @@ struct HabitCardView: View {
                 goalCelebrationOverlay
             }
         }
-        .scaleEffect(isPressed ? 0.98 : 1.0)
-        .animation(
-            reduceMotion ? AnimationConstants.reducedMotion : AnimationConstants.quickSpring,
-            value: isPressed
-        )
+        .contentShape(Rectangle())
         .onTapGesture {
-            handleTap()
+            onTap()
         }
-        .onLongPressGesture(minimumDuration: 0.5, pressing: { pressing in
-            withAnimation(AnimationConstants.quickSpring) {
-                isPressed = pressing
-            }
-        }) {
-            onLongPress()
-        }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibilityLabel)
-        .accessibilityHint(isTodayCompleted ? "Double tap to mark incomplete" : "Double tap to mark complete")
-        .accessibilityAddTraits(.isButton)
     }
 
     // MARK: - Computed Properties
@@ -93,32 +92,29 @@ struct HabitCardView: View {
         completionCount >= habit.targetPerWeek
     }
 
-    private var isTodayCompleted: Bool {
-        habit.isCompletedOn(date: Date(), calendar: calendar)
-    }
-
     private var progressText: String {
         "\(completionCount) / \(habit.targetPerWeek) this week"
     }
 
     private var accessibilityLabel: String {
         let status = isGoalMet ? "Goal met" : "\(completionCount) of \(habit.targetPerWeek) completed this week"
-        let todayStatus = isTodayCompleted ? "Today completed" : "Today not completed"
-        return "\(habit.name), \(status), \(todayStatus)"
+        return "\(habit.name), \(status)"
     }
 
     // MARK: - Actions
 
-    private func handleTap() {
+    private func handleDateTap(_ date: Date) {
         let wasGoalMet = isGoalMet
 
-        onTap()
+        onDateTap(date)
 
         // Check if goal was just achieved
-        let isNowGoalMet = habit.completionCountForWeek(containing: Date(), calendar: calendar) >= habit.targetPerWeek
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            let isNowGoalMet = habit.completionCountForWeek(containing: Date(), calendar: calendar) >= habit.targetPerWeek
 
-        if !wasGoalMet && isNowGoalMet {
-            triggerGoalCelebration()
+            if !wasGoalMet && isNowGoalMet {
+                triggerGoalCelebration()
+            }
         }
     }
 
@@ -175,7 +171,6 @@ struct HabitCardView: View {
 
 #Preview {
     VStack(spacing: 16) {
-        // This would need actual Habit instances in a real preview
         Text("HabitCardView Preview")
             .padding()
     }
